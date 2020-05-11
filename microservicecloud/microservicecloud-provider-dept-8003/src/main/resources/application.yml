@@ -1,0 +1,39 @@
+server:
+  port: 8003
+
+mybatis:
+  config-location: classpath:mybatis/mybatis.cfg.xml        # mybatis配置文件所在路径,可以没有，因为配置都写进spring了
+  type-aliases-package: com.atguigu.springcloud.entities    # 所有Entity别名类所在包
+  mapper-locations: classpath:mybatis/mapper/*.xml          # mapper映射文件
+  #- classpath:mybatis/mapper/**/*.xml         # mapper映射文件
+spring:
+   application:
+    name: microservicecloud-dept
+   datasource:
+    type: com.alibaba.druid.pool.DruidDataSource            # 当前数据源操作类型
+    driver-class-name: org.gjt.mm.mysql.Driver              # mysql驱动包
+    url: jdbc:mysql://localhost:3306/cloudDB03              # 数据库名称
+    username: root
+    password: 123456
+    dbcp2:
+      min-idle: 5                                           # 数据库连接池的最小维持连接数
+      initial-size: 5                                       # 初始化连接数
+      max-total: 5                                          # 最大连接数
+      max-wait-millis: 200                                  # 等待连接获取的最大超时时间
+
+#客户端注册进eureka服务列表内所添加的，defaultZone表示你让我注册进去，eureka得给我入驻地址
+eureka:
+  client:
+    service-url:
+      #defaultZone: http://localhost:7001/eureka 单机版与eureka交互
+      defaultZone: http://eureka7001.com:7001/eureka/,http://eureka7002.com:7002/eureka/,http://eureka7003.com:7003/eureka/
+  instance:
+      instance-id: microservicecloud-dept8003   #给注册进的微服务修改实例id，即修改 Status值
+      prefer-ip-address: true                 #访问路径可以显示IP地址，即左下角的localhost 变为具体ip地址192.168.1.112
+
+#actuator监控信息完善，即点击eureka里面的微服务的Status值，显示具体信息
+info:
+  app.name: atguigu-microservicecloud
+  company.name: www.atguigu.com
+  build.artifactId: $project.artifactId$
+  build.version: $project.version$

@@ -1,0 +1,223 @@
+----------架构
+负载层：前端访问通过Http或Https协议到达服务端的LB,可以是F5等硬件，也可自行部署LVS+Keepalived等（前期量小可以直接使用Nginx）
+网关层：请求通过LB后，会到达整个微服务体系的网关层Zuul(Gateway)，内嵌Ribbon做客户端负载均衡，Hystrix做熔断降级等
+服务注册：采用Eureka做服务治理，Zuul会从Eureka集群获取已发布的微服务访问地址，然后根据配置把请求代理到相应的微服务去
+docker容器：所有的微服务模块都部署在docker容器里面，而且前后端的服务完全分开
+服务调用：微服务模块调用都采用标准的Http/Https+REST+JSON的方式，调用技术采用Feign+HttpClient+Ribbon+Hystrix
+统一配置：每个微服务模块会跟Eureka集群、配置中心（SpringCloud Config）等进行交互
+第三方框架：每个微服务模块根据自身需要，使用一些第三方框架，如缓存服务Redis、图片服务FastDFS、搜索服务ElasticSearch、安全中心Shiro
+Mysql数据库：可以按照微服务模块进行拆分，统一访问公共库或者单独自己库，可以单独构建Mysql集群或者分库分表MyCat等
+   【MyCat：一个彻底开源的，面向企业应用开发的大数据库集群；
+	   作用：能满足数据库数据大量存储；提高了查询性能；
+	   支持数据库：支持MySQL ORACLE SQLServer等一些主流的数据库；
+	   核心技术：分库分表   
+	】
+	
+----------微服务
+技术维度理解：微服务化的核心就是将传统的一站式应用，根据业务拆分成一个一个的服务，去耦合，一个服务做一件事，从技术角度看就是
+一种小而独立的处理过程，类似进程概念，能够自行单独启动或销毁，拥有自己独立的数据库
+
+----------springcloud
+1)分布式微服务架构下的一站式解决方案，是各个微服务架构落地技术的集合体，俗称微服务全家桶
+2)它基于SpringBoot提供了一套微服务解决方案，简化了分布式系统基础设施的开发，包括服务注册与发现，负载均衡，熔断器，全链路监控，
+服务网关，配置中心等组件。
+【SpringCloud采用基于HTTP的REST方式通信，Dubbo采用RPC通信，各有优劣，从一定程度上说，REST牺牲了服务调用的性能，
+但也避免了原生RPC带来的问题，而且REST相比RPC更为灵活，不存在代码级别的强依赖。
+品牌机与组装机的区别，spring cloud背靠spring社区保证功能更强大、高稳定性。】
+
+
+----------Eurak：服务注册与发现
+作为服务注册中心，Eureka比Zookeeper区别：著名的CAP理论指出，一个分布式系统不可能同时满足C(一致性)A(可用性)P(分区容错性)，
+分区容错性P是分布式系统必须要保证的，因此只能在A和C中权衡，Eureka保证的是AP,Zookeeper保证的是CP
+ 【Zookeeper 是Google 的 Chubby一个开源的实现 ，是 Hadoop 的分布式协调服务，分布式应用程序可以基于它实现同步服务】
+4.1 Zookeeper保正CP
+当向注册中心査询服务列表时,我们可以容忍注册中心返回的是几分钟以前的注册信息,但不能接受服务直接down掉不可用,
+也就是说,服务注册功能对可用性的要求高于一致性. 但是Zookeeper会出现这样一种情况,当master节点因为网络故障与其他节点失去联系时，
+剩余节点会重新进行leader选举.问题在于选举leader的时间太长, 30~120s，且选举期间整个zk集群都是不可用的,
+这就导致在选举期间注册服务瘫痪,在云部署的环境下，因网络问题使得zk集群失去master节点是较大概率会发生的事,虽然服务能够最終恢复，
+但是漫长的选举时间号致的注册长期不可用是不能容忍的.
+4.2 Eureka保证AP
+Eureka看明白了这一点,因此在设计时就优先保证可用性, Eureka各个节点都是平等的,几个节点挂指不会影响正常节点的工作，剰余的节点
+依然可以提供注册和查询服务，而Eureka的客户端在向某个Eureka注册时如果发现连接失败,则会自动切换至其它节点.只要有一台Eureka还在,
+就能保证注册服务可用(保证可用性),只不过查到的信息可能不是最新的(不保证强一致性),除此之外, 
+Eureka还有一种自我保护机制：
+如果在15分钟内超过85%的节点都没有正常的心跳,那么Eureka就认为客户端与注册中心出现了网络故障,此时会出现以下几种情况:
+1.Eureka不再从注册列表中移除因为长时间没收到心跳而应该过期的服务
+（默认情况下，如果EurekaServer在一定时间内没有接收到某个微服务实例的心跳，EurekaServer将会注销该实例（默认90秒））
+2.Eureka仍然能够接受新服务的注册和査询请求, 但是不会被同步到其它节点上(即保证当前节点依然可用)
+3.当网络稳定时，当前实例新的注册信息会被同步到其它节点中
+因此，Eureka可以很好的应对因网络故障导致部分节点失去联系的情况，而不会像zookeeper那样使整个注册服务瘫痪
+
+----------Ribbon负载均衡
+LB=>在微服务或分布式集群中经常用的一种应用，负载均衡简单的说就是将用户的请求平摊的分配到多个服务上，从而让系统HA(高可用)，
+常见的负载均衡有软件Nginx,LVS，硬件F5等
+1）集中式LB=>即在服务的消费方和提供方之间使用独立的LB设施（可以是F5,可以是Nginx）,由该设施负责把访问请求通过某种策略
+转发至服务的提供方；
+2）进程内LB=>将LB逻辑集成到消费方，消费方从服务注册中心获知有哪些地址可用，然后自己再从这些地址中选择出一个合适的服务器。
+Ribbon负载均衡（进程内LB）：Ribbon是Netflix发布的开源项目，主要功能是提供客户端的软件负载均衡算法，如轮询，随机连接，重试等7种，
+也可使用Ribbon实现自定义的负载均衡算法，通过算法去连接提供服务的机器。
+
+----------Feign负载均衡
+Feign是一个声明式WebService客户端，使用方法是定义一个服务绑定接口且以声明式的方法，然后在上面添加注解@FeignClient，实现服务调用。
+Feign集成了Ribbon：利用Ribbon维护了MicroServiceCloud-Dept的服务列表信息，并且通过轮询实现了客户端的负载均衡。
+（实现方式：Ribbon+RestTemplate、 Feign+DeptClientService @FeignClient）
+
+----------Hystrix熔断器：服务熔断、服务降级、服务限流、接近实时的监控Hystrix Dashboard
+一个用于处理分布式系统的延迟和容错的开源库，Hystrix能保证在一个依赖出问题的情况下，不会导致整体服务失败，以提高分布式系统的弹性。
+操作：当某个服务单元发生故障，通过断路器的故障监控，向调用方返回一个符合预期的备选响应（FallBack），而不是长时间的等待或抛出
+调用方无法处理的异常，这就保证了服务调用方的线程不会被长时间地占用。
+1）服务熔断（@HystrixCommand）：当扇出链路的某个微服务不可用或响应时间太长，会进行服务的降级，进而熔断该节点微服务的调用，
+快速返回"错误"的响应信息
+2）服务降级：整体资源快不够了，忍痛将某些服务先关掉，待渡过难关，再开启回来。
+服务降级处理是在客户端实现完成的，与服务端没有关系
+3）准实时的监控（Hystrix Dashboard）：Hystrix会持续记录所有通过Hystrix发起的请求，并以统计报表和图形的形式展示给用户，
+包括每秒执行多少请求，多少成功，多少失败等。Netflix通过hystrix-metrics-event-stream项目实现了对以上指标的监控。
+Spring Cloud也提供了Hystrix Dashboard的整合，对监控内容转化成可视化界面。
+http://localhost:9001/hystrix =》豪猪，图形化监控
+
+----------Zuul：提供代理+路由+过滤三大功能
+路由功能负责将外部请求转发到具体的微服务实例上，是实现外部访问统一入口的基础，
+过滤功能负责对请求的处理过程进行干预，是实现请求校验、服务聚合等功能的基础，
+Zuul和Eureka进行整合，将Zuul自身注册为Eureka服务治理下的应用，以后访问微服务都是通过Zuul跳转后获得。
+
+----------SpringClud Config配置中心
+bootstrap.yml是系统级的，优先级更高=》application.yml是用户级的资源配置项
+SpringCloud会创建一个'Bootstrap Context'，作为Spring应用的'Application Context'的父上下文
+
+SpringClud Config为微服务提供集中化的外部配置支持，分为服务端和客户端，
+服务端：也称为分布式配置中心，是一个独立的微服务应用，用来连接配置服务器，且作为客户端和配置服务器之间连接的纽带
+客户端：通过指定的配置中心来管理应用资源，并在启动的时候从配置中心获取配置信息
+配置服务器采用git来存储，这有助于对环境配置进行版本管理
+
+create table dept(
+	deptno BIGINT primary key AUTO_INCREMENT,
+	dname varchar(60),
+	db_source varchar(60)
+)
+select *from dept
+insert into dept values(0,'开发部',DATABASE())
+insert into dept values(0,'人事部',DATABASE())
+insert into dept values(0,'财务部',DATABASE())
+insert into dept values(0,'市场部',DATABASE())
+insert into dept values(0,'运维部',DATABASE())
+---------------------------工程说明------------------------------------
+microservicecloud（整体父工程Project）：主要是定义POM文件，将后续各个子模块公用的jar包等统一提出来，类似一个抽象父类
+注意点：新建工程时Packageing选择pom模式，新建其它子module时选jar模式
+microservicecloud-api（公共子模块Module）
+microservicecloud-provider-dept-8001（部门微服务提供者Module）
+microservicecloud-consumer-dept-80（部门微服务消费者Module）
+microservicecloud-eureka-7001（eureka服务注册中心Module）：引入cloud的一个新技术组件，基本要加两个东西：
+	1）pom文件加依赖：  <!--eureka-server服务端 -->
+						<dependency>
+							<groupId>org.springframework.cloud</groupId>
+							<artifactId>spring-cloud-starter-eureka-server</artifactId>
+						</dependency>
+	2）启动类上加注解：@EnableEurekaServer   // EurekaServer服务器端启动类,接受其它微服务注册进来
+
+----eureka服务发现展示：
+1）microservicecloud-provider-dept-8001服务提供者：主启动类加 @EnableDiscoveryClient注解；
+   DeptController类 注入DiscoveryClient对象（private DiscoveryClient client;//作服务发现用，暴露自己），然后写方法
+2）microservicecloud-consumer-dept-80 服务消费者：DeptController_Consumer类写方法 测试服务提供端启动类的
+      @EnableDiscoveryClient注解,消费端可以调用服务发现
+			@RequestMapping(value = "/consumer/dept/discovery")
+			public Object discovery() {
+				return restTemplate.getForObject(REST_URL_PREFIX + "/dept/discovery", Object.class);
+			}
+	服务消费端访问都可以不带端口号：http://localhost/consumer/dept/discovery，
+	                     实际会访问 http://localhost:8001/dept/discovery
+----eureka集群搭建：
+1）添加一下域名映射：修改 C:\Windows\System32\drivers\etc\hosts文件，添加映射
+	127.0.0.1   eureka7001.com
+	127.0.0.1   eureka7002.com
+	127.0.0.1   eureka7003.com
+2）修改eureka自身集群yml ，及microservicecloud-provider-dept-8001服务提供端yml，与eureka交互的
+eureka.client.service-url.defaultZone改为集群版：http://eureka7001.com:7001/eureka/,
+http://eureka7002.com:7002/eureka/,http://eureka7003.com:7003/eureka/，eureka自身的yml加上另外两个即可
+
+----Ribbon负载均衡配置（Ribbon是基于Netflix Ribbon实现的一套客户端 负载均衡工具，因此在消费端module做配置操作）
+1）pom文件添加Ribbon相关依赖，ribbon需要跟eureka整合，eureka又跟starter-config有联系，故加Ribbon带上这三个依赖
+2）yml文件加上eureka集群配置defaultZone： http://eureka7001.com:7001/eureka/,
+       http://eureka7002.com:7002/eureka/,http://eureka7003.com:7003/eureka/
+3）ConfigBean配置类开启Ribbon负载均衡，在getRestTemplate()方法上加上 @LoadBalanced 注解即可
+4）启动类加上@EnableEurekaClient注解，Ribbon负载均衡需要跟eureka整合，故加上该注解，碰巧pom文件也加了eureka的依赖
+5）//将写死的服务提供者，改为注册到eureka的微服务名称（配合Ribbon负载均衡配置而改）
+   private static final String REST_URL_PREFIX = "http://MICROSERVICECLOUD-DEPT";  //"http://localhost:8001"
+
+此时要让 @LoadBalanced 注解起作用，还要再注册几个微服务提供者，microservicecloud-provider-dept-8002，
+microservicecloud-provider-dept-8003，其它都copy,只需修改yml文件中的eureka.instance.instance-id（Status值，对外服务
+实例名，即同一个微服务下将有3个服务实例）、端口号、数据库名称（新建各自module对应的数据库）=》启动3个eureka、
+3个provider及consumer module,然后访问测试：http://localhost/consumer/dept/list （刷新可看到 轮询显示三个provider）
+
+修改默认轮询算法：修改消费module的ConfigBean类，添加如下代码：
+	@Bean
+	public IRule myRule() {
+		//RetryRule() --重试，当3个provider都正常就相当于轮询，当故意关掉一个，在轮询到关掉的这一个几次后，
+		// 将不在轮询它，只轮询正常的另外两个
+		//RoundRobinRule() 默认的轮询
+		return new RandomRule();  //随机算法
+	}
+自定义Ribbon负载均衡算法：主启动类加注解@RibbonClient(name="MICROSERVICECLOUD-DEPT",configuration=MySelfRule.class)，
+启动时加载自定义配置类MySelfRule -》新建配置类MySelfRule（引用自定义算法）-》写自定义算法类RandomRule_ZY
+
+----feign负载均衡配置（将Ribbon的面向RestTemplate编程，改为feign的面向service编程）
+1）先在microservicecloud-api公共子模块添加DeptClientService接口（接口直接引用上微服
+务@FeignClient(value = "MICROSERVICECLOUD-DEPT")），pom文件加上feign依赖
+2）添加microservicecloud-consumer-dept-feign模块（功能都可以直接copy消费端module），在DeptController_Consumer类直接
+注入DeptClientService接口，调用接口方法实现接口编程，pom文件加上feign依赖
+3）主启动类开启feign功能，@EnableFeignClients(basePackages= {"com.atguigu.springcloud"})
+						  @ComponentScan("com.atguigu.springcloud")
+4）访问测试，显示就按你设置的负载均衡算法（还是随机RandomRule()）
+因为Feign集成了Ribbon：利用Ribbon维护了MicroServiceCloud-Dept的服务列表信息，通过你设置的随机实现客户端的负载均衡
+
+microservicecloud-provider-dept-hystrix-8001服务熔断测试module：当http://localhost/consumer/dept/get/22时，没有id为
+22的部门报错时，即会调用@HystrixCommand标注好的fallbackMethod调用类中的指定方法进行服务熔断
+1）copy服务提供端microservicecloud-provider-dept-8001的代码，即熔断module也注册为一个微服务提供者，因此改一下yml文件
+的实例名称（Status），带个hystrix区别下
+2）pom文件加hystrix依赖(spring-cloud-starter-hystrix)，主启动类加上@EnableCircuitBreaker--开启Hystrix服务功能
+3）修改DeptController类方法，@RequestMapping(value = "/dept/get/{id}", method = RequestMethod.GET)
+	//调用服务方法失败后，会自动调用@HystrixCommand标注好的fallbackMethod调用类中的指定方法processHystrix_Get()
+							@HystrixCommand(fallbackMethod = "processHystrix_Get")
+							public Dept get(@PathVariable("id") Long id) {
+服务降级：开启服务端后，故意关闭它，然后显示我们自己写的提示信息，实现服务降级
+（关闭了服务端后继续走客户端，因为服务降级是在客户端完成的）
+----代码改造：避免每写一个controller方法，上面就添加一个@HystrixCommand方法，避免代码重复，直接在DeptService上就实
+现fallbackFactory接口，就可以保证该servies下的所有方法都实现了服务熔断
+1）在microservicecloud-api公共子模块添加DeptClientServiceFallbackFactory类实现FallbackFactory<DeptClientService>
+接口，千万不能忘记在该类上添加 @Component 注解
+2）microservicecloud-api公共子模块的 DeptClientService接口类引用DeptClientServiceFallbackFactory类（在原来feign的注解
+中再加一个参数）@FeignClient(value = "MICROSERVICECLOUD-DEPT",fallbackFactory=DeptClientServiceFallbackFactory.class)
+=》因为在feign注解中添加了hystrix，所以用microservicecloud-consumer-dept-feign添加了feign的消费端模块测试
+=》因此在microservicecloud-consumer-dept-feign的yml中加入hystrix内容: feign.hystrix.enabled=true
+
+microservicecloud-consumer-hystrix-dashboard服务监控module:
+1）pom文件加依赖：spring-cloud-starter-hystrix-dashboard、spring-cloud-starter-hystrix
+   因为是监控，要保证注册的微服务provider的pom加了监控actuator的依赖spring-boot-starter-actuator
+2）主启动类加上 @EnableHystrixDashboard
+访问dashboard（类似tomcat）：http://localhost:9001/hystrix ->然后在打开的页面配置stream
+    http://localhost:8001/hystrix.stream、Delay（2000ms，2秒一次）、Title（随便起个名字），这样就可以监控
+	http://localhost:8001/dept/get/1服务端了（9001监控8001），每访问一次都会监控次数，及其它东西
+	
+microservicecloud-zuul-gateway-9527模块：
+1）pom文件加依赖 spring-cloud-starter-zuul及其它功能的依赖
+2）yml文件修改下实例id(Status)，instance-id: gateway-9527.com，这意味这加一下域名映射：127.0.0.1   myzuul.com
+3）主启动类加注解 @EnableZuulProxy
+测试：不加路由：http://localhost:8001/dept/get/1
+       加路由： http://myzuul.com:9527/microservicecloud-dept/dept/get/1（为什么能调用其它微服务访问？
+Zuul和Eureka进行整合，将Zuul自身注册为Eureka的微服务，且可以查询到其它微服务，所以访问微服务都是通过Zuul跳转后获得）
+
+路由访问映射规则配置（终于明白zuul的路由功能了，就是去改访问地址）
+# 隐藏真实的microservicecloud-dept 实例id，改为自定义的 mydept（但此时两个都可以用，所以要忽略掉原路由：
+# ignored-services: microservicecloud-dept，这是忽略具体的，如果要忽略多个，则使用 ignored-services: "*"）
+# 另外，还可以给路由域名加前缀 prefix: /atguigu （此时必须带上/atguigu才可访问）
+# 所以最终访问地址：http://myzuul.com:9527/atguigu/mydept/dept/get/1
+zuul:
+  #ignored-services: microservicecloud-dept
+  prefix: /atguigu
+  ignored-services: "*"
+  routes:
+    mydept.serviceId: microservicecloud-dept
+    mydept.path: /mydept/**
+
+
+
+																
