@@ -1,0 +1,19 @@
+server:
+  port: 9002
+
+spring:
+  application:
+    name: client-feign
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:7001/eureka
+  instance:
+    instance-id: client-feign9002   #给注册进的微服务修改实例id，即修改 Status值
+    prefer-ip-address: true
+
+# feign默认带断路器功能，手动开启
+feign:
+  hystrix:
+    enabled: true

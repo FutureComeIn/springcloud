@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="c3f3d66b-13a2-4fa6-92cd-afed30448be3" name="默认更改列表" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CodeInsightWorkspaceSettings">
+    <option name="optimizeImportsOnTheFly" value="true" />
+  </component>
+  <component name="CompilerWorkspaceConfiguration">
+    <option name="MAKE_PROJECT_ON_SAVE" value="true" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="importingSettings">
+      <MavenImportingSettings>
+        <option name="importAutomatically" value="true" />
+      </MavenImportingSettings>
+    </option>
+  </component>
+  <component name="ProjectId" id="1dzUji5HpMRhTW1BRgVPWOhUb7g" />
+  <component name="ProjectViewState">
+    <option name="autoscrollToSource" value="true" />
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="Downloaded.Files.Path" value="$PROJECT_DIR$/config-server" />
+    <property name="Downloaded.Files.Path.Enabled" value="true" />
+    <property name="Repository.Attach.Annotations" value="false" />
+    <property name="Repository.Attach.JavaDocs" value="false" />
+    <property name="Repository.Attach.Sources" value="false" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="jdk.selected.JAVA_MODULE" value="1.8.0_192" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="project.structure.last.edited" value="Libraries" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="project.structure.side.proportion" value="0.35402298" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+  </component>
+  <component name="RecentsManager">
+    <key name="ExtractSuperBase.RECENT_KEYS">
+      <recent name="com.future.config" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.future.config" />
+      <recent name="com.future" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/client-feign/src/main/java/com/future" />
+      <recent name="$PROJECT_DIR$/microservicecloud-consumer-dept-feign/src/main/java/com.future" />
+      <recent name="$PROJECT_DIR$/client-feign/src/main/resources" />
+      <recent name="$PROJECT_DIR$/client-ribbon/src/main/java/com/future" />
+      <recent name="$PROJECT_DIR$/server-provider8003/src/main/java/com/future" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Application.ConfigServerApplication">
+    <configuration name="ClientFeignApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.future.ClientFeignApplication" />
+      <module name="client-feign" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.future.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ClientRibbonApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.future.ClientRibbonApplication" />
+      <module name="client-ribbon" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.future.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ConfigClientApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.future.ConfigClientApplication" />
+      <module name="config-client" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.future.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ConfigServerApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.future.ConfigServerApplication" />
+      <module name="config-server" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.future.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="EurekaServerApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.future.EurekaServerApplication" />
+      <module name="eureka-server" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.future.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Application.ClientRibbonApplication" />
+      <item itemvalue="Application.ClientFeignApplication" />
+      <item itemvalue="Application.ConfigServerApplication" />
+      <item itemvalue="Application.ConfigClientApplication" />
+      <item itemvalue="Application.EurekaServerApplication" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.ConfigServerApplication" />
+        <item itemvalue="Application.ConfigClientApplication" />
+        <item itemvalue="Application.EurekaServerApplication" />
+        <item itemvalue="Application.ClientFeignApplication" />
+        <item itemvalue="Application.ClientRibbonApplication" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="ServiceViewManager">
+    <option name="viewStates">
+      <list>
+        <serviceView>
+          <treeState>
+            <expand />
+            <select />
+          </treeState>
+        </serviceView>
+      </list>
+    </option>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="c3f3d66b-13a2-4fa6-92cd-afed30448be3" name="默认更改列表" comment="" />
+      <created>1593427551573</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1593427551573</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="111" y="32" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1594796981353">
+      <screen x="0" y="23" width="1280" height="691" />
+    </state>
+    <state x="111" y="32" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.23.1280.691@0.23.1280.691" timestamp="1594796981353" />
+    <state x="426" y="175" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1594797620146">
+      <screen x="0" y="23" width="1280" height="691" />
+    </state>
+    <state x="426" y="175" key="#com.intellij.fileTypes.FileTypeChooser/0.23.1280.691@0.23.1280.691" timestamp="1594797620146" />
+    <state x="434" y="82" key="#com.intellij.ide.macro.MacrosDialog" timestamp="1594605895640">
+      <screen x="0" y="23" width="1280" height="691" />
+    </state>
+    <state x="434" y="82" key="#com.intellij.ide.macro.MacrosDialog/0.23.1280.691@0.23.1280.691" timestamp="1594605895640" />
+    <state x="449" y="93" key="#com.intellij.ide.util.MemberChooser" timestamp="1594634814284">
+      <screen x="0" y="23" width="1280" height="691" />
+    </state>
+    <state x="449" y="93" key="#com.intellij.ide.util.MemberChooser/0.23.1280.691@0.23.1280.691" timestamp="1594634814284" />
+    <state x="384" y="161" key="#com.intellij.ide.util.TreeClassChooserDialog" timestamp="1594605846465">
+      <screen x="0" y="23" width="1280" height="691" />
+    </state>
+    <state x="384" y="161" key="#com.intellij.ide.util.TreeClassChooserDialog/0.23.1280.691@0.23.1280.691" timestamp="1594605846465" />
+    <state x="309" y="52" key="#com.intellij.unscramble.UnscrambleDialog" timestamp="1594192369539">
+      <screen x="0" y="23" width="1280" height="691" />
+    </state>
+    <state x="309" y="52" key="#com.intellij.unscramble.UnscrambleDialog/0.23.1280.691@0.23.1280.691" timestamp="1594192369539" />
+    <state x="242" y="37" key="#项目结构" timestamp="1594888800067">
+      <screen x="0" y="23" width="1280" height="691" />
+    </state>
+    <state x="242" y="37" key="#项目结构/0.23.1280.691@0.23.1280.691" timestamp="1594888800067" />
+    <state width="1276" height="90" key="GridCell.Tab.0.bottom" timestamp="1594901115344">
+      <screen x="0" y="23" width="1280" height="691" />
+    </state>
+    <state width="1276" height="90" key="GridCell.Tab.0.bottom/0.23.1280.691@0.23.1280.691" timestamp="1594901115344" />
+    <state width="1276" height="90" key="GridCell.Tab.0.center" timestamp="1594901115343">
+      <screen x="0" y="23" width="1280" height="691" />
+    </state>
+    <state width="1276" height="90" key="GridCell.Tab.0.center/0.23.1280.691@0.23.1280.691" timestamp="1594901115343" />
+    <state width="1276" height="90" key="GridCell.Tab.0.left" timestamp="1594901115343">
+      <screen x="0" y="23" width="1280" height="691" />
+    </state>
+    <state width="1276" height="90" key="GridCell.Tab.0.left/0.23.1280.691@0.23.1280.691" timestamp="1594901115343" />
+    <state width="1276" height="90" key="GridCell.Tab.0.right" timestamp="1594901115344">
+      <screen x="0" y="23" width="1280" height="691" />
+    </state>
+    <state width="1276" height="90" key="GridCell.Tab.0.right/0.23.1280.691@0.23.1280.691" timestamp="1594901115344" />
+    <state x="173" y="38" key="Maven.ArtifactSearchDialog" timestamp="1594630560445">
+      <screen x="0" y="23" width="1280" height="691" />
+    </state>
+    <state x="173" y="38" key="Maven.ArtifactSearchDialog/0.23.1280.691@0.23.1280.691" timestamp="1594630560445" />
+    <state x="173" y="41" key="Maven.ArtifactSearchDialog/0.23.1280.696@0.23.1280.696" timestamp="1594122330174" />
+    <state x="195" y="23" key="SettingsEditor" timestamp="1594889246281">
+      <screen x="0" y="23" width="1280" height="691" />
+    </state>
+    <state x="195" y="23" key="SettingsEditor/0.23.1280.691@0.23.1280.691" timestamp="1594889246281" />
+    <state x="353" y="269" key="com.intellij.jarRepository.RepositoryAttachDialog-DOWNLOAD" timestamp="1594882122696">
+      <screen x="0" y="23" width="1280" height="691" />
+    </state>
+    <state x="353" y="269" key="com.intellij.jarRepository.RepositoryAttachDialog-DOWNLOAD/0.23.1280.691@0.23.1280.691" timestamp="1594882122696" />
+    <state x="295" y="132" width="669" height="476" key="find.popup" timestamp="1594891301241">
+      <screen x="0" y="23" width="1280" height="691" />
+    </state>
+    <state x="295" y="132" width="669" height="476" key="find.popup/0.23.1280.691@0.23.1280.691" timestamp="1594891301241" />
+    <state x="34" y="108" key="new project wizard" timestamp="1594796516609">
+      <screen x="0" y="23" width="1280" height="691" />
+    </state>
+    <state x="34" y="108" key="new project wizard/0.23.1280.691@0.23.1280.691" timestamp="1594796516609" />
+    <state x="301" y="38" width="670" height="676" key="search.everywhere.popup" timestamp="1594899009315">
+      <screen x="0" y="23" width="1280" height="691" />
+    </state>
+    <state x="301" y="38" width="670" height="676" key="search.everywhere.popup/0.23.1280.691@0.23.1280.691" timestamp="1594899009315" />
+  </component>
+</project>

@@ -1,0 +1,7 @@
+com/future/ClientFeignApplication.class
+com/future/hystrix/FeignFallbackFactory.class
+com/future/hystrix/FeignFallbackFactory$1.class
+com/future/myrule/RandomRule_ZY.class
+com/future/FeignController.class
+com/future/myrule/MySelfRule.class
+com/future/FeignService.class

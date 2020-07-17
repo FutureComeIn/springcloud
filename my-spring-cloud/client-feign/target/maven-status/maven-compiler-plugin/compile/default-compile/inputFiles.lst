@@ -1,0 +1,6 @@
+/Users/v_yuanxiwen/code/my-spring-cloud/client-feign/src/main/java/com/future/FeignService.java
+/Users/v_yuanxiwen/code/my-spring-cloud/client-feign/src/main/java/com/future/hystrix/FeignFallbackFactory.java
+/Users/v_yuanxiwen/code/my-spring-cloud/client-feign/src/main/java/com/future/myrule/RandomRule_ZY.java
+/Users/v_yuanxiwen/code/my-spring-cloud/client-feign/src/main/java/com/future/FeignController.java
+/Users/v_yuanxiwen/code/my-spring-cloud/client-feign/src/main/java/com/future/myrule/MySelfRule.java
+/Users/v_yuanxiwen/code/my-spring-cloud/client-feign/src/main/java/com/future/ClientFeignApplication.java

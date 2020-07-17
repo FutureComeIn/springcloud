@@ -1,0 +1,89 @@
+------微服务：将传统的一站式应用，根据业务拆分成一个一个的服务，能够自行单独启动或销毁，拥有独立的数据库
+---微服务框架解决方案：1）springcloud--》基于SpringBoot提供了一套微服务解决方案，包括服务注册与发现，负载均衡，熔断器，服务网关，配置中心等组件。
+                    2）Dubbo--》Dubbo采用RPC通信，SpringCloud采用基于HTTP的REST方式通信，REST避免了原生RPC带来的问题（代码级别的强依赖），
+                     但牺牲了服务调用的性能，而且spring cloud背靠spring社区保证功能更强大、高稳定性。
+以下是springcloud各组件详解-----------------------------------------------------------------------------
+
+my-spring-cloud（整体父工程Project）说明：
+    1）新建工程时Packageing选择pom模式，新建其它子module时选jar模式
+    2）父pom定义了依赖及版本，子pom只需定义依赖不需要再定义version
+    3）springcloud 和 springboot的版本要指定，不然其他子工程无法引入spirngcloud各组件的依赖
+	   <version>Dalston.SR1</version>  -》 <version>1.5.9.RELEASE</version>
+-----------------------------------------------------------------------------
+Eurak：服务注册与发现
+	服务注册中心Eureka和Zookeeper区别：CAP理论指出，一个分布式系统不可能同时满足一致性（consistency）、可用性（available）、
+分区容错性（partition），分布式系统必须保证分区容错性，因此只能在一致性和可用性中权衡；Eureka保证的是AP,Zookeeper保证的是CP；
+    可用性要高于一致性：当向注册中心査询可注册服务时,可以容忍返回的是几分钟以前的可注册信息,但不能接受注册服务直接down掉不可用；
+--Zookeeper：当master节点因为网络故障与其他节点失去联系时，剩余节点会重新进行leader选举，但选举时间太长，且选举期间整个zk集群都不可用，
+			导致注册不可用；
+--Eureka：Eureka各个节点平等,几个节点挂掉不影响正常节点提供注册，微服务注册时发现节点不可用会自动切换至其它节点；
+		 Eureka还有一种自我保护机制：15分钟内超过85%的节点没有正常心跳,Eureka就认为客户端与注册中心出现了网络故障,此时
+1.长时间（默认90秒）没收到心跳而应该过期的微服务实例不再从注册列表中注销
+2.Eureka仍然能够接受新服务的注册和査询请求, 但是不会被同步到其它节点上(即保证当前节点依然可用)
+3.当网络稳定时，当前实例新的注册信息会被同步到其它节点中
+
+-----------------------------------------------------------------------------
+负载均衡：将用户的请求平摊的分配到多个服务上，从而让系统HA(高可用)，常见负载均衡有软件Nginx,LVS，硬件F5等；
+1）集中式LB=>在服务消费者和提供者之间使用独立的LB设施（可以是F5,可以是Nginx）,由该设施把访问请求通过某种策略转发至服务提供者；
+2）进程内LB=>消费者从服务注册中心获取可用地址，再从这些地址选择一个合适的服务器；
+Ribbon属于进程内LB：提供客户端的软件负载均衡算法，如轮询，随机连接，重试等7种，也可自定义负载均衡算法，通过算法连接服务提供者。
+-----------------------------------------------------------------------------
+Hystrix熔断器（服务熔断、服务降级、服务限流、实时监控Hystrix Dashboard）
+
+服务消费者增加Hystrix：防止由于网络原因或者自身原因，服务不可用，服务间的调用依赖于Restful形式，提供了两种方式：Ribbon+RestTemplate，Feign
+情况一：ribbon工程改造-->属于服务熔断（访问没有的deptno时，即会调用@HystrixCommand标注好的指定方法进行服务熔断）
+  （当扇出链路的某个微服务不可用或响应时间太长，会进行服务的降级，进而熔断该微服务，返回"错误"的响应信息；服务熔断在服务端完成）
+1）依赖：spring-cloud-starter-hystrix
+2）启动类：@EnableCircuitBreaker注解，开启断路器功能
+3）RestTemplateImpl类调用方法添加断路器
+【 然后服务消费端访问可不带端口号：http://localhost/consumer/dept/discovery 】
+情况二：feign工程改造-->属于服务降级（故意关闭服务端，即会调用FeignFallbackFactory类中处理异常的方法，实现服务降级）
+  （整体资源快不够了，忍痛将某些服务先关掉，待渡过难关，再开启回来；关闭服务端后继续走客户端，因为服务降级在客户端完成）
+1）Feign是一个声明式WebService客户端，定义服务接口service（加@FeignClient）供调用
+2）Feign默认集成了Hystrix，因此不需要引入Hystrix依赖，只需要在配置文件中打开即可：feign.hystrix.enabled=true
+3）Feign集成了Ribbon，访问自动遵循负载均衡
+总结：服务熔断每处理一个RequestMapping，就需要一个@HystrixCommand处理方法，容易代码膨胀
+     服务降级在service上集成一个处理类，统一处理异常
+
+Hystrix Dashboard：Hystrix会持续记录所有通过Hystrix发起的请求（即添加了熔断操作的请求），并以统计报表和图形的形式展示给用户。
+  搭建Dashboard微服务实现查看：http://localhost:9003/hystrix =》豪猪，图形化监控，页面配置三个参数：
+    （1）有Hystrix的微服务访问地址+hystrix.stream，如http://localhost:9001/hystrix.stream
+    （2）Delay（2000ms，默认2秒刷新一次）
+    （3）Title（随便起个名字）
+ 这样就可以监控 http://localhost:9001/consumer/getHystrix/1的访问情况了（9003监控9001），每访问一次都会监控次数，及其它东西
+ 怎样看界面：7色 1圈 1线
+ 实心圆：颜色变化代表了实例的健康程度，绿色<黄色<橙色<红色；大小也根据访问次数发生变化，随流量增大而增大
+ 所以通过该实心圆的展示，可在大量实例中发现 故障实例、高压力实例。
+
+-------------------------------------------------------------------------------
+zuul（提供代理+路由转发+过滤三大功能（默认集成了Ribbon实现负载均衡））
+    zuul整合了Eureka，启动类不需要加@EnableEurekaServer注解，但pom文件要加eureka依赖，就会注册为Eureka服务，
+然后访问其他微服务就会通过zuul跳转，是实现外部访问统一入口的基础
+    过滤功能负责对请求的处理过程进行干预，是实现请求校验、服务聚合等功能的基础
+路由配置：1）yml不配置zuul,访问地址：http://localhost:6001/server-provider/getDept
+         2）省略服务提供者的配置，加前缀 /myzuul 等，访问地址：http://localhost:6001/myzuul/mydept/getDept
+注：前缀前一定要加 / ,默认前缀是zuul，但通过zuul.servlet-path=/ 做了裁剪，所以没添加自己的前缀时，访问时地址带不带zuul都可以访问,
+如果一定要使用zuul前缀，添加如下配置：zuul.servlet-path=/，zuul.prefix=/zuul;
+         3）/api-r/开头的请求交给ribbon，/api-f/开头的请求交给feign服务）
+
+-------------------------------------------------------------------------------
+SpringClud Config（为微服务提供集中化的外部配置支持，分为服务端和客户端）
+服务端：是一个独立的微服务应用，用来连接服务器（用github，有助于对环境配置进行版本管理），且作为客户端连接服务器的纽带
+客户端：也是一个微服务，通过服务端连接服务器，在启动的时候从服务器获取配置信息
+    bootstrap.yml是系统级的，优先级更高=》application.yml是用户级的资源配置项（客户端配置访问服务端要用bootstrap.yml）
+    SpringCloud会创建一个'Bootstrap Context'，作为Spring应用的'Application Context'的父上下文
+服务端启动后，访问配置文件的三种地址：
+	http://localhost:5001/application-dev.yml
+	http://localhost:5001/application/dev[/master]
+	http://localhost:5001/master/application-dev.yml
+
+-------------------------------------------------------------------------------
+CREATE DATABASE IF NOT EXISTS cloudDB01;
+create table dept(
+	deptno BIGINT primary key AUTO_INCREMENT,
+	dname varchar(60),
+	db_source varchar(60)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+--ENGINE=InnoDB: 默认引擎
+--CHARSET=utf-8: my.ini设置utf-8设置的是mysql的语言编码，二者作用域不一样，创建表单时这个charset会作用到该表，防止插入中文时乱码
+insert into dept values(0,'开发部',DATABASE());

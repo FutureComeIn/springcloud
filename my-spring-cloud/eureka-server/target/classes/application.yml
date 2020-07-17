@@ -1,0 +1,16 @@
+server:
+  port: 7001
+
+eureka:
+  instance:
+    hostname: localhost   #eureka服务端的实例名称
+  client:
+    # 通过fetch-registry、register-with-eureka指定当前是eureka-server，因为默认情况eureka-server也是一个eureka-client，必须要指定
+    fetch-registry: false
+    register-with-eureka: false
+    service-url:
+      #设置与Eureka Server交互的地址,查询服务和注册服务都需要依赖这个地址（单机）, 不加defaultZone启动会出现无法绑定的错误
+      default-zone: http://${eureka.instance.hostname}:${server.port}/eureka/
+      #搭建集群，交互地址就加上集群的eureka访问地址
+      #defaultZone: http://eureka7002.com:7002/eureka/,http://eureka7003.com:7003/eureka/
+

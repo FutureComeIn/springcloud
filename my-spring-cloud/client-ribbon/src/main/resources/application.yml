@@ -1,0 +1,23 @@
+server:
+  port: 9001
+
+
+spring:
+  application:
+    name: client-ribbon
+
+#客户端注册进eureka服务列表内所添加的，defaultZone表示你让我注册进去，eureka得给我入驻地址
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:7001/eureka    # 单机版与eureka交互
+  instance:
+    instance-id: client-ribbon9001   #给注册进的微服务修改实例id，即修改 Status值
+    prefer-ip-address: true           #访问路径可以显示IP地址，即左下角的localhost 变为具体ip地址192.168.1.112
+
+#actuator监控信息完善，即点击eureka里面的微服务的Status值，显示具体信息
+info:
+  app.name: client-ribbon-hystrix
+  company.name: www.atguigu.com
+  build.artifactId: $project.artifactId$
+  build.version: $project.version$

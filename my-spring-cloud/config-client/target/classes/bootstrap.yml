@@ -1,0 +1,7 @@
+spring:
+  cloud:
+    config:
+      name: application-config-client-dev   # github中客户端的yml文件，不带后缀
+      profiles: blob
+      lable: master
+      uri: http://localhost:5001    # config服务模块地址

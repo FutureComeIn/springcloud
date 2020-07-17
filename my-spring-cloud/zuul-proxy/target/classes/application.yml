@@ -1,0 +1,44 @@
+server:
+  port: 6001
+
+spring:
+  application:
+    name: zuul-proxy
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:7001/eureka
+  instance:
+    instance-id: zuul-proxy6001
+    prefer-ip-address: true
+
+# 如：http://localhost:6001/api-f/feign/getDept
+# 隐藏服务提供者实例server-provider，改为自定义的 mydept（但此时两个都可以用，所以要忽略掉原路由：
+# 忽略具体：ignored-services: server-provider；忽略多个：ignored-services: "*"）
+# 域名加前缀 prefix: /myzuul （此时必须带上/myzuul才可访问）
+# 所以最终访问地址：http://localhost:6001/myzuul/mydept/****
+zuul:
+  prefix: /myzuul
+  ignored-services: "*"
+  routes:
+    user.serviceId: server-provider
+    user.path: /user/**
+    # 路由转发配置：请求开头为/api-r/时转发给ribbon服务，http://localhost:6001/myzuul/api-r/consumer/getHystrix/22
+    #             请求开头为/api-f/时转发给feign服务, http://localhost:6001/myzuul/api-f/feign/getByNo/1
+    api-r:
+      path: /api-r/**
+      serviceId: client-ribbon
+    api-f:
+      path: /api-f/**
+      serviceId: client-feign
+
+info:
+  app.name: atguigu-microcloud
+  company.name: www.atguigu.com
+  build.artifactId: $project.artifactId$
+  build.version: $project.version$
+
+
+
+
